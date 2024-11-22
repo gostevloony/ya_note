@@ -23,6 +23,9 @@ class TestRoutes(TestCase):
         )
 
     def test_pages_availability(self):
+        # 1. Главная страница доступна анонимному пользователю.
+        # 5. Страницы регистрации пользователей, входа в учётную запись и
+        # выхода из неё доступны всем пользователям.
         urls = (
             ('notes:home', None),
             ('users:login', None),
@@ -35,7 +38,31 @@ class TestRoutes(TestCase):
                 response = self.client.get(url)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
-    def test_availability_for_comment_edit_and_delete(self):
+    def test_pages_availability_for_auth_user(self):
+        # 2. Аутентифицированному пользователю доступна страница со списком
+        # заметок notes/, страница успешного добавления заметки done/, страница
+        # добавления новой заметки add/.
+        users_statuses = (
+            (self.author, HTTPStatus.OK),
+            (self.reader, HTTPStatus.OK),
+        )
+        urls = (
+            ('notes:list'),
+            ('notes:success'),
+            ('notes:add'),
+        )
+        for user, status in users_statuses:
+            self.client.force_login(user)
+            for name in urls:
+                with self.subTest(user=user, name=name):
+                    url = reverse(name, args=None)
+                    response = self.client.get(url)
+                    self.assertEqual(response.status_code, status)
+
+    def test_availability_for_author_notes(self):
+        # 3. Страницы отдельной заметки, удаления и редактирования заметки
+        # доступны только автору заметки. Если на эти страницы попытается
+        # зайти другой пользователь — вернётся ошибка 404.
         users_statuses = (
             (self.author, HTTPStatus.OK),
             (self.reader, HTTPStatus.NOT_FOUND),
@@ -54,6 +81,10 @@ class TestRoutes(TestCase):
                     self.assertEqual(response.status_code, status)
 
     def test_redirect_for_anonymous_client(self):
+        # 4. При попытке перейти на страницу списка заметок, страницу успешного
+        # добавления записи, страницу добавления заметки, отдельной заметки,
+        # редактирования или удаления заметки анонимный пользователь
+        # перенаправляется на страницу логина.
         login_url = reverse('users:login')
         urls = (
             ('notes:list', None),
