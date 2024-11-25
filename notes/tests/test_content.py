@@ -12,10 +12,10 @@ class TestContent(TestCase):
     def setUpTestData(cls):
         cls.author = User.objects.create(username='Автор')
         cls.reader = User.objects.create(username='Читатель')
-        cls.author_logged = Client()
-        cls.reader_logged = Client()
-        cls.author_logged.force_login(cls.author)
-        cls.reader_logged.force_login(cls.reader)
+        cls.auth_client = Client()
+        cls.reader_client = Client()
+        cls.auth_client.force_login(cls.author)
+        cls.reader_client.force_login(cls.reader)
         cls.notes = Note.objects.create(
             title='Заголовок',
             text='Текст',
@@ -30,8 +30,8 @@ class TestContent(TestCase):
         # 2. В список заметок одного пользователя не попадают заметки
         # другого пользователя.
         users_statuses = (
-            (self.author_logged, True),
-            (self.reader_logged, False),
+            (self.auth_client, True),
+            (self.reader_client, False),
         )
         for user, status in users_statuses:
             with self.subTest():
@@ -43,5 +43,5 @@ class TestContent(TestCase):
         # 3. На страницы создания и редактирования заметки передаются формы.
         for url in (self.NOTES_ADD_URL, self.notes_edit_url):
             with self.subTest():
-                response = self.author_logged.get(url)
+                response = self.auth_client.get(url)
                 self.assertIn('form', response.context)
