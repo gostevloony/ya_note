@@ -54,11 +54,11 @@ class TestCommentCreation(TestCase):
         )
         self.assertRedirects(response, self.NOTES_SUCCESS_URL)
         self.assertEqual(Note.objects.count(), 2)
-        note_new = Note.objects.order_by('id').last()
-        self.assertEqual(note_new.title, self.form_data['title'])
-        self.assertEqual(note_new.text, self.form_data['text'])
-        self.assertEqual(note_new.slug, self.form_data['slug'])
-        self.assertEqual(note_new.author, self.author)
+        new_note = Note.objects.order_by('id').last()
+        self.assertEqual(new_note.title, self.form_data['title'])
+        self.assertEqual(new_note.text, self.form_data['text'])
+        self.assertEqual(new_note.slug, self.form_data['slug'])
+        self.assertEqual(new_note.author, self.author)
 
     def test_not_unique_slug(self):
         # 2. Невозможно создать две заметки с одинаковым slug.
@@ -108,10 +108,10 @@ class TestCommentCreation(TestCase):
         )
         self.assertRedirects(response, self.NOTES_SUCCESS_URL)
         self.assertEqual(Note.objects.count(), 1)
-        note_new = Note.objects.get()
-        self.assertEqual(note_new.title, self.form_data['title'])
-        self.assertEqual(note_new.text, self.form_data['text'])
-        self.assertEqual(note_new.slug, self.form_data['slug'])
+        new_note = Note.objects.get()
+        self.assertEqual(new_note.title, self.form_data['title'])
+        self.assertEqual(new_note.text, self.form_data['text'])
+        self.assertEqual(new_note.slug, self.form_data['slug'])
 
     def test_user_cant_edit_note_of_another_user(self):
         # 4.4 Пользователь не может редактировать чужие заметки.
@@ -120,7 +120,7 @@ class TestCommentCreation(TestCase):
             data=self.form_data
         )
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
-        note_old = Note.objects.get(id=self.note.id)
-        self.assertEqual(self.note.title, note_old.title)
-        self.assertEqual(self.note.text, note_old.text)
-        self.assertEqual(self.note.slug, note_old.slug)
+        old_note = Note.objects.get(id=self.note.id)
+        self.assertEqual(self.note.title, old_note.title)
+        self.assertEqual(self.note.text, old_note.text)
+        self.assertEqual(self.note.slug, old_note.slug)
